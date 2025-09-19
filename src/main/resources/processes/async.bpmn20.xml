@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd
+             http://activiti.org/bpmn http://activiti.org/schema/activiti/bpmn.xsd"
+             id="Definitions_1"
+             targetNamespace="http://activiti.org/async-http-query">
+
+  <!-- 消息定义：用于回调触发 -->
+  <message id="msgHttpResponse" name="httpResponseReceived" />
+
+  <process id="asyncHttpQueryProcess" name="异步HTTP查询流程" isExecutable="true">
+    <!-- 1. 开始事件 -->
+    <startEvent id="startEvent" name="流程启动">
+      <outgoing>flow1</outgoing>
+    </startEvent>
+
+    <!-- 2. 发起异步HTTP请求（服务任务） -->
+    <serviceTask id="serviceTaskSendRequest" name="发起HTTP查询请求"
+                 activiti:class="com.example.activiti.task.SendTask">
+      <incoming>flow1</incoming>
+      <outgoing>flow2</outgoing>
+    </serviceTask>
+
+    <!-- 3. 等待回调（中间捕获事件） -->
+    <intermediateCatchEvent id="catchEventWaitCallback" name="等待HTTP回调">
+      <incoming>flow2</incoming>
+      <outgoing>flow3</outgoing>
+      <messageEventDefinition id="msgDefHttpResponse" messageRef="msgHttpResponse" />
+    </intermediateCatchEvent>
+
+    <!-- 4. 处理回调结果（服务任务） -->
+    <serviceTask id="serviceTaskProcessResult" name="处理回调结果"
+                 activiti:class="com.example.activiti.task.CallbackTask">
+      <incoming>flow3</incoming>
+      <outgoing>flow4</outgoing>
+    </serviceTask>
+
+    <!-- 5. 结束事件 -->
+    <endEvent id="endEvent" name="流程结束">
+      <incoming>flow4</incoming>
+    </endEvent>
+
+    <!-- 流程连线 -->
+    <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="serviceTaskSendRequest" />
+    <sequenceFlow id="flow2" sourceRef="serviceTaskSendRequest" targetRef="catchEventWaitCallback" />
+    <sequenceFlow id="flow3" sourceRef="catchEventWaitCallback" targetRef="serviceTaskProcessResult" />
+    <sequenceFlow id="flow4" sourceRef="serviceTaskProcessResult" targetRef="endEvent" />
+  </process>
+
+  <!-- 流程图布局信息（可选，用于可视化工具展示） -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="asyncHttpQueryProcess">
+      <bpmndi:BPMNShape id="_BPMNShape_startEvent_2" bpmnElement="startEvent">
+        <dc:Bounds x="100" y="100" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="105" y="135" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="serviceTaskSendRequest_shape" bpmnElement="serviceTaskSendRequest">
+        <dc:Bounds x="180" y="80" width="100" height="60" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="catchEventWaitCallback_shape" bpmnElement="catchEventWaitCallback">
+        <dc:Bounds x="330" y="100" width="30" height="30" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="serviceTaskProcessResult_shape" bpmnElement="serviceTaskProcessResult">
+        <dc:Bounds x="410" y="80" width="100" height="60" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="endEvent_shape" bpmnElement="endEvent">
+        <dc:Bounds x="560" y="100" width="30" height="30" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="flow1_edge" bpmnElement="flow1">
+        <di:waypoint x="130" y="115" />
+        <di:waypoint x="180" y="115" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow2_edge" bpmnElement="flow2">
+        <di:waypoint x="280" y="115" />
+        <di:waypoint x="330" y="115" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow3_edge" bpmnElement="flow3">
+        <di:waypoint x="360" y="115" />
+        <di:waypoint x="410" y="115" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="flow4_edge" bpmnElement="flow4">
+        <di:waypoint x="510" y="115" />
+        <di:waypoint x="560" y="115" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

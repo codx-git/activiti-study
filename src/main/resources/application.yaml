@@ -1,0 +1,21 @@
+server:
+  port: 8090
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/activiti?serverTimezone=GMT%2B8&useSSL=false&nullCatalogMeansCurrent=true
+    username: root
+    password: root
+  activiti:
+    database-schema-update: false  # 自动更新数据库表结构（开发环境用）
+    history-level: full           # 流程历史记录级别（full 记录所有细节）
+    check-process-definitions: true  # 自动部署 classpath 下的流程定义文件
+    db-history-used: true   # 启用历史表功能
+logging:
+  level:
+    org.springframework.data.jdbc: info
+    org.activiti: info
+    org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl: debug
+    org.activiti.engine.impl.persistence.entity: debug
+    com.example.activiti: debug
+
