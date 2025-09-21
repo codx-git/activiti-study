@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +42,28 @@ public class ProcessController {
     }
 
     @PostMapping("/queryMessage")
-    public ApiResponse<String> qeuryMessage(){
+    public ApiResponse<String> queryMessage(){
         List<ProcessDefinition> list = repositoryService.createProcessDefinitionQuery().messageEventSubscriptionName("httpResponseReceived").list();
         return ApiResponse.success(list.toString());
+    }
+
+    @PostMapping("/queryExeMessage")
+    public ApiResponse<String> queryExeMessage(@RequestParam String name){
+        List<Execution> list = runtimeService.createExecutionQuery().messageEventSubscriptionName(name).list();
+        return ApiResponse.success(list.toString());
+    }
+
+    @PostMapping("getCurrentExe")
+    public ApiResponse<Execution> getCurrentExe(@RequestParam String processInstanceId){
+        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).list();
+        if(executions.isEmpty()) return ApiResponse.fail(502,"不存在");
+        for (Execution execution : executions) {
+            // 有activityId的执行对象才是当前正在执行的节点
+            String activityId = execution.getActivityId();
+            if (activityId != null) {
+                 log.info("当前节点信息：{}",activityId); // 返回第一个找到的活动节点
+            }
+        }
+        return ApiResponse.success(null);
     }
 }

@@ -3,6 +3,8 @@ package com.example.activiti.controller;
 import com.example.activiti.common.ApiResponse;
 import com.example.activiti.utils.ZipUtil;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.zip.ZipInputStream;
 
 @RestController
@@ -19,6 +22,12 @@ public class DeploymentController {
     private final RepositoryService repositoryService;
     DeploymentController(RepositoryService repositoryService){
         this.repositoryService = repositoryService;
+    }
+
+    @PostMapping("query")
+    public ApiResponse<String> queryDeployment(){
+        List<Deployment> list = repositoryService.createDeploymentQuery().list();
+        return ApiResponse.success(list.toString());
     }
 
     @PostMapping("/deployByZip")
